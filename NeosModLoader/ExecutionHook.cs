@@ -18,7 +18,7 @@ namespace NeosModLoader
             try
             {
                 SplashChanger.SetCustom("Loading libraries");
-                AssemblyFile[] loadedAssemblies = AssemblyLoader.LoadAssembliesFromDir("nml_libs");
+                AssemblyFile[] loadedAssemblies = AssemblyLoader.LoadAssembliesFromDir(AppDomain.CurrentDomain,"nml_libs");
                 if (loadedAssemblies.Length != 0)
                 {
                     string loadedAssemblyList = string.Join("\n", loadedAssemblies.Select(a => a.Assembly.FullName));

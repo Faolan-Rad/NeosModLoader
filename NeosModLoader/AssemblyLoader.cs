@@ -41,7 +41,7 @@ namespace NeosModLoader
             return assembliesToLoad;
         }
 
-        private static Assembly? LoadAssembly(string filepath)
+        private static Assembly? LoadAssembly(AppDomain appDomain, string filepath)
         {
             string filename = Path.GetFileName(filepath);
             SplashChanger.SetCustom($"Loading file: {filename}");
@@ -49,7 +49,7 @@ namespace NeosModLoader
             try
             {
                 Logger.DebugFuncInternal(() => $"load assembly {filename}");
-                assembly = Assembly.LoadFile(filepath);
+                assembly = appDomain.Load(File.ReadAllBytes(filepath));
             }
             catch (Exception e)
             {
@@ -64,7 +64,7 @@ namespace NeosModLoader
             return assembly;
         }
 
-        internal static AssemblyFile[] LoadAssembliesFromDir(string dirName)
+        internal static AssemblyFile[] LoadAssembliesFromDir(AppDomain appDomain, string dirName)
         {
             List<AssemblyFile> assemblyFiles = new();
             if (GetAssemblyPathsFromDir(dirName) is string[] assemblyPaths)
@@ -73,7 +73,7 @@ namespace NeosModLoader
                 {
                     try
                     {
-                        if (LoadAssembly(assemblyFilepath) is Assembly assembly)
+                        if (LoadAssembly(appDomain,assemblyFilepath) is Assembly assembly)
                         {
                             assemblyFiles.Add(new AssemblyFile(assemblyFilepath, assembly));
                         }

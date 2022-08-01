@@ -1,3 +1,4 @@
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 
@@ -28,6 +29,14 @@ namespace NeosModLoader
         /// Called once immediately after NeosModLoader begins execution
         /// </summary>
         public virtual void OnEngineInit() { }
+
+        /// <summary>
+        /// Called once immediately after NeosModLoader begins execution
+        /// </summary>
+        public virtual Harmony OnInject() {
+            return null;
+        }
+
 
         /// <summary>
         /// Build the defined configuration for this mod.
@@ -84,6 +93,13 @@ namespace NeosModLoader
             }
 
             return new ModConfigurationDefinition(this, version, new HashSet<ModConfigurationKey>(configurationItemDefinitions), autoSave);
+        }
+
+        /// <summary>
+        /// Define this mod's CleanUp Like Unpatching
+        /// </summary>
+        public virtual void CleanUp()
+        {
         }
 
         /// <summary>

@@ -31,19 +31,11 @@ namespace NeosModLoader
                 .ToList();
         }
 
-        internal static void LoadMods()
+        internal static void LoadModAsm(AppDomain modsAppDomain)
         {
-            ModLoaderConfiguration config = ModLoaderConfiguration.Get();
-            if (config.NoMods)
-            {
-                Logger.DebugInternal("mods will not be loaded due to configuration file");
-                return;
-            }
-            SplashChanger.SetCustom("Looking for mods");
-
             // generate list of assemblies to load
             AssemblyFile[] modsToLoad;
-            if (AssemblyLoader.LoadAssembliesFromDir("nml_mods") is AssemblyFile[] arr)
+            if (AssemblyLoader.LoadAssembliesFromDir(modsAppDomain, "nml_mods") is AssemblyFile[] arr)
             {
                 modsToLoad = arr;
             }
@@ -92,8 +84,7 @@ namespace NeosModLoader
             }
 
             SplashChanger.SetCustom("Hooking big fish");
-            Harmony harmony = new("net.michaelripley.neosmodloader");
-            ModConfiguration.RegisterShutdownHook(harmony);
+
 
             foreach (LoadedNeosMod mod in LoadedMods)
             {
@@ -106,6 +97,31 @@ namespace NeosModLoader
                     Logger.ErrorInternal($"Unexpected exception in OnEngineInit() for mod {mod.NeosMod.Name} from {mod.ModAssembly.File}:\n{e}");
                 }
             }
+        }
+
+        internal static void LoadMods()
+        {
+            ModLoaderConfiguration config = ModLoaderConfiguration.Get();
+            if (config.NoMods)
+            {
+                Logger.DebugInternal("mods will not be loaded due to configuration file");
+                return;
+            }
+            SplashChanger.SetCustom("Looking for mods");
+
+            var modsAppDomain = AppDomain.CreateDomain("mods");
+            var assembliesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "nml_mods");
+            var fileListen = new FileSystemWatcher();
+            fileListen.Changed += (object e, FileSystemEventArgs arg) =>
+            {
+                AppDomain.Unload(modsAppDomain);
+                modsAppDomain = AppDomain.CreateDomain("mods");
+                LoadModAsm(modsAppDomain);
+            };
+            LoadModAsm(modsAppDomain);
+
+            Harmony harmony = new("net.michaelripley.neosmodloader");
+            ModConfiguration.RegisterShutdownHook(harmony);
 
             // log potential conflicts
             if (config.LogConflicts)
