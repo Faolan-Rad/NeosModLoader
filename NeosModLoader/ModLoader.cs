@@ -110,12 +110,20 @@ namespace NeosModLoader
             SplashChanger.SetCustom("Looking for mods");
 
             var modsAppDomain = AppDomain.CreateDomain("mods");
+            foreach (var item in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                modsAppDomain.Load(item.GetName());
+            }
             var assembliesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "nml_mods");
             var fileListen = new FileSystemWatcher();
             fileListen.Changed += (object e, FileSystemEventArgs arg) =>
             {
                 AppDomain.Unload(modsAppDomain);
                 modsAppDomain = AppDomain.CreateDomain("mods");
+                foreach (var item in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    modsAppDomain.Load(item.GetName());
+                }
                 LoadModAsm(modsAppDomain);
             };
             LoadModAsm(modsAppDomain);
